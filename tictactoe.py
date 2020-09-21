@@ -8,7 +8,8 @@ oMark = 'O'
 player_mark = xMark
 cpu_mark = oMark
 current_move = player_mark
-font = "droidsans"
+font = "data/droidsans.ttf"
+restart_text = " Press 'r' to restart "
 
 
 def comp_move(board):
@@ -144,13 +145,13 @@ def draw_board(board):
     for i in range(3):
         for j in range(3):
             x_placement = 0
-            y_placement = 35
+            y_placement = -50
             if board[i][j] == xMark:
                 color = xColor
-                x_placement = 67
+                x_placement = 75
             else:
                 color = oColor
-                x_placement = 50
+                x_placement = 70
 
             text_surface = my_font.render(board[i][j], True, color)
             screen.blit(text_surface, (i * (gameSize[0] // 3) + windowMarginSides + x_placement,
@@ -195,12 +196,11 @@ def draw_lines():
 
 def won(winner):
     win_font = pygame.font.SysFont(font, 40)
-    text = "Winner is {}".format(winner[0])
-    text2 = "Press 'r' to restart"
+    text = " Winner is {} ".format(winner[0])
     text_width, text_height = win_font.size(text)
-    text2_width, text2_height = win_font.size(text2)
+    text2_width, text2_height = win_font.size(restart_text)
     win_msg = win_font.render(text, 1, (0, 0, 0), (255, 255, 255))
-    win_msg2 = win_font.render(text2, 1, (0, 0, 0), (255, 255, 255))
+    win_msg2 = win_font.render(restart_text, 1, (0, 0, 0), (255, 255, 255))
     screen.blit(win_msg,
                 (windowSize[0] // 2 - text_width // 2, windowSize[1] // 2 - text_height // 2))
     screen.blit(win_msg2,
@@ -209,12 +209,11 @@ def won(winner):
 
 def draw():
     win_font = pygame.font.SysFont(font, 40)
-    text = "Draw!"
-    text2 = "Press 'r' to restart"
+    text = " Draw! "
     text_width, text_height = win_font.size(text)
-    text2_width, text2_height = win_font.size(text2)
+    text2_width, text2_height = win_font.size(restart_text)
     win_msg = win_font.render(text, 1, (0, 0, 0), (255, 255, 255))
-    win_msg2 = win_font.render(text2, 1, (0, 0, 0), (255, 255, 255))
+    win_msg2 = win_font.render(restart_text, 1, (0, 0, 0), (255, 255, 255))
     screen.blit(win_msg,
                 (windowSize[0] // 2 - text_width // 2, windowSize[1] // 2 - text_height // 2))
     screen.blit(win_msg2,
@@ -271,26 +270,29 @@ def start_game():
                     elif cpu_player:
                         cpu_move(board)
 
-        win_font = pygame.font.SysFont(font, 40)
-        turn_text = "Turn: {}".format(current_move)
-        text_width, text_height = win_font.size(turn_text)
+        win_font = pygame.font.Font(font, 40)
+        turn_text = " Turn: {} ".format(current_move)
+        text_size = win_font.size(turn_text)
         win_msg = win_font.render(turn_text, 1, (0, 0, 0), (255, 255, 255))
-        screen.blit(win_msg, (windowSize[0] // 2 - text_width // 2, windowSize[1] - 2 * text_height))
+        position = (windowSize[0] // 2 - text_size[0] // 2, windowSize[1] - 2 * 55)
+        screen.blit(win_msg, position)
         pygame.display.update()
 
 
 def cpu_move(board):
     global can_play
-    win_font = pygame.font.SysFont(font, 40)
-    wait_text = "AI is thinking..."
-    wait_width, wait_height = win_font.size(wait_text)
-    wait = win_font.render("AI is thinking...", 1, (0, 0, 0), (255, 255, 255))
-    screen.blit(wait, (windowSize[0] // 2 - wait_width // 2, windowSize[1] - 2 * wait_height))
+
+    win_font = pygame.font.Font(font, 40)
+    wait_text = " AI is thinking... "
+    wait_size = win_font.size(wait_text)
+    wait = win_font.render(wait_text, 1, (0, 0, 0), (255, 255, 255))
+    position2 = (windowSize[0] // 2 - wait_size[0] // 2, windowSize[1] - 2 * 55)
+    screen.blit(wait, position2)
     pygame.display.update()
     time.sleep(1.5)
     pygame.draw.rect(screen, backgroundColor, (
-        windowSize[0] // 2 - wait_width // 2, windowSize[1] - 2 * wait_height, wait_width,
-        wait_height))
+        windowSize[0] // 2 - wait_size[0] // 2, windowSize[1] - 2 * 55, wait_size[0]+100,
+        55))
     pygame.display.update()
     cpu_move = comp_move(board)
     move(board, cpu_move, current_move)
@@ -299,6 +301,8 @@ def cpu_move(board):
     cpu_winner = get_winner(board)
     if cpu_winner is not None:
         won(["AI"])
+    if board_full(board):
+        draw()
 
 
 def toggle_current_player():
@@ -319,6 +323,7 @@ def toggle_mark():
     global cpu_player
     global xMark
     global oMark
+    global menu
 
     if player_mark is xMark:
         player_mark = oMark
@@ -347,9 +352,9 @@ def toggle_cpu():
 
 def open_control_menu():
     control_menu = pygame_menu.menu.Menu(300, 400, "Controls", theme=pygame_menu.themes.THEME_DEFAULT)
-    control_menu.add_label("Esc = Quit", font_size=20, selectable=False)
+    control_menu.add_label("Quit = Esc", font_size=20, selectable=False)
     control_menu.add_label("Menu = F1", font_size=20, selectable=False)
-    control_menu.add_label("", selectable=False)
+    control_menu.add_label(" ", selectable=False)
     control_menu.add_button("Back", open_main_menu, button_id="0")
     control_menu.mainloop(screen)
     control_menu.get_widget("0").set_attribute("active", "True")
