@@ -10,7 +10,7 @@ cpu_mark = oMark
 current_move = player_mark
 font = "data/droidsans.ttf"
 restart_text = " Press 'r' to restart "
-cpu_difficulty = "medium"
+cpu_difficulty = "normal"
 
 
 def comp_move(board):
@@ -20,19 +20,14 @@ def comp_move(board):
             if board[x][y] is None:
                 extracted_moves.append((x, y))
 
-    if cpu_difficulty  == "hard":
+    if cpu_difficulty  == "normal":
         move = check_winning_move(cpu_mark, extracted_moves, board)
         if move is not None:
             return move
-    elif cpu_difficulty == "medium":
+    elif cpu_difficulty == "easy":
         move = check_winning_move([cpu_mark, player_mark], extracted_moves, board)
         if move is not None:
             return move
-    else:
-        move = check_winning_move([player_mark, cpu_mark], extracted_moves, board)
-        if move is not None:
-            return move
-
 
     corners = []
     for i in extracted_moves:
@@ -358,6 +353,7 @@ def toggle_cpu():
     if cpu_player:
         cpu_player = False
         on_off = "off"
+
     else:
         cpu_player = True
         on_off = "on"
@@ -369,12 +365,10 @@ def toggle_cpu():
 def toggle_difficulty():
     global cpu_difficulty
 
-    if cpu_difficulty == "medium":
-        cpu_difficulty = "hard"
-    elif cpu_difficulty == "hard":
+    if cpu_difficulty == "normal":
         cpu_difficulty = "easy"
     else:
-        cpu_difficulty = "medium"
+        cpu_difficulty = "normal"
 
     menu.get_selected_widget().set_title("Difficulty = {}".format(cpu_difficulty))
     pygame.display.update()
