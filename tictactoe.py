@@ -10,23 +10,27 @@ cpu_mark = oMark
 current_move = player_mark
 font = "data/droidsans.ttf"
 restart_text = " Press 'r' to restart "
+cpu_difficulty = "normal"
 
 
 def comp_move(board):
-    from copy import deepcopy
     extracted_moves = []
     for x in range(3):
         for y in range(3):
             if board[x][y] is None:
                 extracted_moves.append((x, y))
 
-    for i in extracted_moves:
-        for symbol in [cpu_mark, player_mark]:
-            copy_board = deepcopy(board)
-            copy_board[i[0]][i[1]] = symbol
-            if is_winner(copy_board, symbol):
-                move = i
-                return move
+    if cpu_difficulty  == "normal":
+        move = check_winning_move(cpu_mark, extracted_moves, board)
+        if move is not None:
+            return move
+        move = check_winning_move(player_mark, extracted_moves, board)
+        if move is not None:
+            return move
+    elif cpu_difficulty == "easy":
+        move = check_winning_move([cpu_mark, player_mark], extracted_moves, board)
+        if move is not None:
+            return move
 
     corners = []
     for i in extracted_moves:
@@ -48,6 +52,16 @@ def comp_move(board):
         move = select_random(sides)
         return move
 
+
+def check_winning_move(symbols, extracted, board):
+    from copy import deepcopy
+    for i in extracted:
+        for symbol in [symbols]:
+            copy_board = deepcopy(board)
+            copy_board[i[0]][i[1]] = symbol
+            if is_winner(copy_board, symbol):
+                move = i
+                return move
 
 def select_random(list):
     import random
@@ -140,18 +154,18 @@ def get_winner(board):
 
 
 def draw_board(board):
-    my_font = pygame.font.SysFont(font, gameSize[1] // 3)
+    my_font = pygame.font.Font(font, gameSize[1] // 3)
 
     for i in range(3):
         for j in range(3):
             x_placement = 0
-            y_placement = -50
+            y_placement = 10
             if board[i][j] == xMark:
                 color = xColor
-                x_placement = 75
+                x_placement = 70
             else:
                 color = oColor
-                x_placement = 70
+                x_placement = 50
 
             text_surface = my_font.render(board[i][j], True, color)
             screen.blit(text_surface, (i * (gameSize[0] // 3) + windowMarginSides + x_placement,
@@ -195,7 +209,7 @@ def draw_lines():
 
 
 def won(winner):
-    win_font = pygame.font.SysFont(font, 40)
+    win_font = pygame.font.Font(font, 40)
     text = " Winner is {} ".format(winner[0])
     text_width, text_height = win_font.size(text)
     text2_width, text2_height = win_font.size(restart_text)
@@ -208,7 +222,7 @@ def won(winner):
 
 
 def draw():
-    win_font = pygame.font.SysFont(font, 40)
+    win_font = pygame.font.Font(font, 40)
     text = " Draw! "
     text_width, text_height = win_font.size(text)
     text2_width, text2_height = win_font.size(restart_text)
@@ -249,9 +263,6 @@ def start_game():
                     if can_play is False:
                         cpu_move(board)
                 if event.key == pygame.K_ESCAPE:
-                    pygame.quit()
-                    sys.exit()
-                if event.key == pygame.K_F1:
                     open_main_menu()
             if event.type == pygame.MOUSEBUTTONDOWN and can_play:
                 (mouseX, mouseY) = pygame.mouse.get_pos()
@@ -324,6 +335,7 @@ def toggle_mark():
     global xMark
     global oMark
     global menu
+    global current_move
 
     if player_mark is xMark:
         player_mark = oMark
@@ -331,6 +343,8 @@ def toggle_mark():
     else:
         player_mark = xMark
         cpu_player = oMark
+
+    current_move = player_mark
 
     menu.get_selected_widget().set_title("Player symbol = {}".format(player_mark))
     pygame.display.update()
@@ -342,6 +356,7 @@ def toggle_cpu():
     if cpu_player:
         cpu_player = False
         on_off = "off"
+
     else:
         cpu_player = True
         on_off = "on"
@@ -350,10 +365,21 @@ def toggle_cpu():
     pygame.display.update()
 
 
+def toggle_difficulty():
+    global cpu_difficulty
+
+    if cpu_difficulty == "normal":
+        cpu_difficulty = "easy"
+    else:
+        cpu_difficulty = "normal"
+
+    menu.get_selected_widget().set_title("Difficulty = {}".format(cpu_difficulty))
+    pygame.display.update()
+
+
 def open_control_menu():
     control_menu = pygame_menu.menu.Menu(300, 400, "Controls", theme=pygame_menu.themes.THEME_DEFAULT)
-    control_menu.add_label("Quit = Esc", font_size=20, selectable=False)
-    control_menu.add_label("Menu = F1", font_size=20, selectable=False)
+    control_menu.add_label("Go back to Menu = Esc", font_size=20, selectable=False)
     control_menu.add_label(" ", selectable=False)
     control_menu.add_button("Back", open_main_menu, button_id="0")
     control_menu.mainloop(screen)
@@ -370,6 +396,7 @@ def open_main_menu():
     menu.add_button('Play', start_game)
     menu.add_button("Player symbol = {}".format(player_mark), toggle_mark)
     menu.add_button("AI = {}".format(on_off), toggle_cpu)
+    menu.add_button("Difficulty = {}".format(cpu_difficulty), toggle_difficulty)
     menu.add_button("Controls", open_control_menu)
     menu.add_button('Quit', pygame_menu.events.EXIT)
     menu.mainloop(screen)
@@ -392,6 +419,6 @@ pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(windowSize)
 pygame.display.set_caption("TicTacToe")
-pygame.font.init()
-myFont = pygame.font.SysFont(font, gameSize[0] // 3)
+myFont = pygame.font.Font(font, gameSize[0] // 3)
 open_main_menu()
+#Todo Ai on of on of broken
