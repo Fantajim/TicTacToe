@@ -19,6 +19,9 @@ def comp_move(board):
         for y in range(3):
             if board[x][y] is None:
                 extracted_moves.append((x, y))
+    if len(extracted_moves) == 9:
+        move = select_random(extracted_moves)
+        return move
 
     if cpu_difficulty  == "normal":
         move = check_winning_move(cpu_mark, extracted_moves, board)
@@ -260,10 +263,11 @@ def start_game():
                     board = [[None, None, None], [None, None, None], [None, None, None]]
                     screen.fill(backgroundColor)
                     draw_lines()
-                    if can_play is False:
+                    if can_play is False and cpu_player:
                         cpu_move(board)
                 if event.key == pygame.K_ESCAPE:
                     open_main_menu()
+
             if event.type == pygame.MOUSEBUTTONDOWN and can_play:
                 (mouseX, mouseY) = pygame.mouse.get_pos()
                 (column, row) = map_mouse_to_board(mouseX, mouseY)
@@ -275,7 +279,8 @@ def start_game():
                     winner = get_winner(board)
                     if winner is not None:
                         won(winner)
-                        can_play = False
+                        if cpu_player:
+                            can_play = False
                     elif board_full(board):
                         draw()
                     elif cpu_player:
@@ -324,6 +329,8 @@ def toggle_current_player():
     else:
         current_move = xMark
     if current_move == player_mark:
+        can_play = True
+    elif cpu_player is False:
         can_play = True
     else:
         can_play = False
@@ -392,7 +399,7 @@ def open_main_menu():
         on_off = "on"
     else:
         on_off = "off"
-    menu = pygame_menu.Menu(400, 500, 'TicTacToe', theme=pygame_menu.themes.THEME_DEFAULT)
+    menu = pygame_menu.Menu(400, 500, 'tictactoe', theme=pygame_menu.themes.THEME_DEFAULT)
     menu.add_button('Play', start_game)
     menu.add_button("Player symbol = {}".format(player_mark), toggle_mark)
     menu.add_button("AI = {}".format(on_off), toggle_cpu)
@@ -418,7 +425,7 @@ can_play = True
 pygame.init()
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode(windowSize)
-pygame.display.set_caption("TicTacToe")
+pygame.display.set_caption("tictactoe")
 myFont = pygame.font.Font(font, gameSize[0] // 3)
 open_main_menu()
 #Todo Ai on of on of broken
