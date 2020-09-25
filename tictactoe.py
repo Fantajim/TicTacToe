@@ -1,8 +1,8 @@
 import sys
 import pygame_menu
 import pygame
-import time
 
+FPS = 60
 xMark = 'X'
 oMark = 'O'
 player_mark = xMark
@@ -251,6 +251,7 @@ def start_game():
 
     draw_lines()
     running = True
+    clock = pygame.time.Clock()
 
     while running:
         for event in pygame.event.get():
@@ -284,6 +285,7 @@ def start_game():
                     elif board_full(board):
                         draw()
                     elif cpu_player:
+                        pygame.event.set_blocked(pygame.MOUSEBUTTONDOWN)
                         cpu_move(board)
 
         win_font = pygame.font.Font(font, 40)
@@ -292,12 +294,14 @@ def start_game():
         win_msg = win_font.render(turn_text, 1, (0, 0, 0), (255, 255, 255))
         position = (windowSize[0] // 2 - text_size[0] // 2, windowSize[1] - 2 * 55)
         screen.blit(win_msg, position)
+        clock.tick(FPS)
         pygame.display.update()
 
 
 def cpu_move(board):
+    import random
     global can_play
-
+    cpu_wait_time = random.uniform(0.3, 1.5) * 1000
     win_font = pygame.font.Font(font, 40)
     wait_text = " AI is thinking... "
     wait_size = win_font.size(wait_text)
@@ -305,10 +309,13 @@ def cpu_move(board):
     position2 = (windowSize[0] // 2 - wait_size[0] // 2, windowSize[1] - 2 * 55)
     screen.blit(wait, position2)
     pygame.display.update()
-    time.sleep(1.5)
+
+    pygame.time.wait(int(cpu_wait_time))
+
     pygame.draw.rect(screen, backgroundColor, (
         windowSize[0] // 2 - wait_size[0] // 2, windowSize[1] - 2 * 55, wait_size[0]+100,
         55))
+
     pygame.display.update()
     cpu_move = comp_move(board)
     move(board, cpu_move, current_move)
@@ -319,6 +326,9 @@ def cpu_move(board):
         won(["AI"])
     if board_full(board):
         draw()
+    pygame.event.clear()
+    pygame.event.set_allowed(pygame.MOUSEBUTTONDOWN)
+
 
 
 def toggle_current_player():
@@ -394,6 +404,8 @@ def open_control_menu():
 
 
 def open_main_menu():
+    global current_move
+    current_move = player_mark
     global menu
     if cpu_player:
         on_off = "on"
